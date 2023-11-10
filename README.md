@@ -10,9 +10,9 @@ This program MUST be run from the command line with 2 arguments!
 
     ./CreditsFormatter <credits_input.txt> <pack_namespace>
 
-The changelog_input.txt file should be one full update worth of Changelog, from the update title to the end of the Notes section. Exclude `==============` dividers. This file must be in the same folder as the program.
+The changelog_input.txt file should be one full update, from the title to the end of the Notes section. Exclude `==============` dividers. This file must be in the same folder as the executable.
 
-The credits_input.txt file should be everything from the first to last contributor credit. Exclude anything past the `==============` dividers. This file must be in the same folder as the program.
+The credits_input.txt file should be everything from the first to last contributor credit. Exclude the `==============` dividers and anything beyond. This file must be in the same folder as the executable.
 
 The pack_namespace is arbitrary, but should match the pack the changelog is for. For example, Java Aspects uses pack_namespace `java_aspects`.
 
@@ -20,7 +20,7 @@ Output files are `en_US_[changelog/credits].lang` and `pack_[changelog/credits]_
 
 # License
 
-Copyright AgentMindStorm. Some rights reserved. You are free to implement my style of custom tab into your own pack and use these tools to generate your files, as long as you credit AgentMindStorm for this program. You are *not* permitted to modify or distribute this program.
+Copyright AgentMindStorm. Some rights reserved. You are free to implement my style of custom tab into your own pack and use these tools to generate your files as long as you credit AgentMindStorm for this program. You are *not* permitted to modify or distribute this program.
 
 # JSON Library
 
