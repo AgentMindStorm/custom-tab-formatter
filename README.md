@@ -16,4 +16,4 @@ The credits_input.txt file should be everything from the first to last contribut
 
 The pack_namespace is arbitrary, but should match the pack the changelog is for. For example, Java Aspects uses pack_namespace `java_aspects`.
 
-Output files are `en_US_changelog.lang` and `pack_changelog_section.json`, or `credits` instead for the credits formatter. These names do not match the default resources so you must copy their contents into the original resource pack files.
+Output files are `en_US_[changelog/credits].lang` and `pack_[changelog/credits]_section.json`. These names do not match the default resources so you must copy their contents into the original resource pack files.
