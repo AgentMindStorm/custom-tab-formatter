@@ -43,18 +43,18 @@ int main(int argc, char* argv[]) {
     std::string pack_namespace = namespaceLine(argv[2]);
 
     //Open output files
-    std::ofstream lang("en_US_part.lang");
+    std::ofstream lang("en_US_changelog.lang");
     if (lang.fail()) {
-        std::cerr << "Failed to create en_US_part.lang." << std::endl;
+        std::cerr << "Failed to create en_US_changelog.lang." << std::endl;
         return -3;
     }
-    std::cout << "Created en_US_part.lang..." << std::endl;
-    std::ofstream formatter("pack_section.json");
+    std::cout << "Created en_US_changelog.lang..." << std::endl;
+    std::ofstream formatter("pack_changelog_section.json");
     if (lang.fail()) {
-        std::cerr << "Failed to create pack_section.json." << std::endl;
+        std::cerr << "Failed to create pack_changelog_section.json." << std::endl;
         return -4;
     }
-    std::cout << "Created pack_section.json..." << std::endl;
+    std::cout << "Created pack_changelog_section.json..." << std::endl;
 
     //Lang file
     std::string current_line, next_line, extra_formatting;
@@ -83,19 +83,19 @@ int main(int argc, char* argv[]) {
     //Print title
     readNextLine(fin,current_line,next_line,extra_formatting,extra_padding,line_count,section_complete);
     lang << "tab." << pack_namespace << ".changelog.title=";
-    lang << extra_formatting << current_line << "\t#" << std::endl;
+    lang << extra_formatting << current_line << std::endl;
 
     //Print release date
     readNextLine(fin,current_line,next_line,extra_formatting,extra_padding,line_count,section_complete);
     extra_formatting = "§7";
     lang << "tab." << pack_namespace << ".changelog.date=";
-    lang << extra_formatting << current_line << "\t#" << std::endl;
+    lang << extra_formatting << current_line << std::endl;
 
     //Print rules
     readNextLine(fin,current_line,next_line,extra_formatting,extra_padding,line_count,section_complete);
     extra_formatting = "";
     lang << "tab." << pack_namespace << ".changelog.rules=";
-    lang << extra_formatting << current_line << "\t#" << std::endl;
+    lang << extra_formatting << current_line << std::endl;
 
     //Set up first section
     readNextLine(fin,current_line,next_line,extra_formatting,extra_padding,line_count,section_complete);
