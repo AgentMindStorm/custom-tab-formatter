@@ -80,6 +80,14 @@ int main(int argc, char* argv[]) {
     int line_count = 0;
 
     //Set up first line
+    j[pack_namespace + "_credits"]["controls"].push_back(json::parse(R"(
+    {
+        "credits_title@how_to_play_common.header": {
+            "$text": "tab.console_aspects.credits.section"
+        }
+    }
+    )"));
+    extra_padding = true;
     readNextLine(fin,current_line,next_line,extra_padding,line_count,section_complete);
 
     //Read/write loop
@@ -121,12 +129,12 @@ int main(int argc, char* argv[]) {
                     {"controls", json::array()}
             };
         }
-
     }
 
     //Print final line and JSON
     if (fin.eof()) {
         printLangFile(lang,pack_namespace,current_line,line_count);
+        addLineToJSON(j, current_control, padding, small_padding, pack_namespace, extra_padding,std::to_string(line_count));
 
         formatter << j.dump(2) << std::endl;
     }
@@ -245,10 +253,10 @@ void printLangFile(std::ofstream& lang, const std::string& pack_namespace, const
 void addLineToJSON(json& j, json_node_t& current_control, const json& padding, const json& small_padding, const std::string& pack_namespace, const bool extra_padding, const std::string& line_count) {
 
     //Print padding, unless on the first line
-    if (extra_padding && line_count != "1") {
+    if (extra_padding) {
         j[pack_namespace + "_credits"]["controls"].push_back(padding);
     }
-    else if (line_count != "1") {
+    else {
         j[pack_namespace + "_credits"]["controls"].push_back(small_padding);
     }
 
