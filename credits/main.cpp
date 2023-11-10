@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
     };
 
     //Set up first line
-    current_control.name = "credits_title@how_to_play_common.paragraph";
+    current_control.name = "credits_title@how_to_play_common.header";
     current_control.text = "tab." + pack_namespace + ".credits.section";
     j[pack_namespace + "_credits"]["controls"].push_back(current_control);
     extra_padding = true;
