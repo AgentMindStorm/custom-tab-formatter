@@ -79,14 +79,17 @@ int main(int argc, char* argv[]) {
     bool section_complete = false, extra_padding = false;
     int line_count = 0;
 
+    //Create credits stack_panel
+    j[pack_namespace + "_credits"] = {
+            {"type", "stack_panel"},
+            {"size", { "100%", "100%c" }},
+            {"controls", json::array()}
+    };
+
     //Set up first line
-    j[pack_namespace + "_credits"]["controls"].push_back(json::parse(R"(
-    {
-        "credits_title@how_to_play_common.header": {
-            "$text": "tab.console_aspects.credits.section"
-        }
-    }
-    )"));
+    current_control.name = "credits_title@how_to_play_common.paragraph";
+    current_control.text = "tab." + pack_namespace + ".credits.section";
+    j[pack_namespace + "_credits"]["controls"].push_back(current_control);
     extra_padding = true;
     readNextLine(fin,current_line,next_line,extra_padding,line_count,section_complete);
 
@@ -107,27 +110,6 @@ int main(int argc, char* argv[]) {
             if (line_count > 500) { //Safety measure - prevent massive files
                 section_complete = true;
             }
-
-        }
-
-        //Iterate section
-        if (!fin.eof()) { //Prevent final line from changing section
-
-            //Update section
-            section_complete = false;
-
-            //Reset line count
-            line_count = 1;
-
-            //Separate lang entries
-            lang << std::endl;
-
-            //Add new section object to JSON
-            j[pack_namespace + "_credits"] = {
-                    {"type", "stack_panel"},
-                    {"size", { "100%", "100%c" }},
-                    {"controls", json::array()}
-            };
         }
     }
 
