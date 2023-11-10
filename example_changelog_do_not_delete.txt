@@ -1,0 +1,122 @@
+Changes in the Tints and Trims Update (5.2.1)
+Released July 17, 2023
+
+Lines that begin with * are features unique to Java Aspects (not in Console Aspects).
+
+==Universal==
+
+Textures:
+-Distant leaves are now as bright as Java Edition
+-*Fast azalea and cherry leaves now match Java Edition
+-Kelp is now brighter to match Java Edition (Thanks, @ZouChenyunfei!)
+-Cherry sign now has the correct command helper
+-*Removed Wild Update panorama
+-*Removed archer pottery sherd texture as Bedrock Edition changed to match Java Edition
+
+Entities:
+-Swimming, crawling, and sneaking animations now better match Java Edition (Thanks, @LateLagMC!)
+-Disabled zombie villager hurt overlay due to upcoming profession changes
+
+Interface:
+-Disabled 2D glass pane icons due to upcoming stained glass pane ID changes
+-The experience bar and number now disappear while riding a horse or camel
+-Horse jump and camel dash bars are no longer stretched on mobile devices
+-Decorated pots are now shaded in inventories
+-Action bar HUD text (like dismount messages) now has a shadow
+-Removed main menu panorama to match Java Edition
+
+Sounds:
+-Suspicious gravel, pink petals, and sniffer egg block sounds now have volumes and pitches consistent with Java Edition
+-Updated brush item sounds to match Java Edition
+-*Updated biome music playlists to match 1.20
+-Removed cherry wood sound files as they were officially added to the game
+
+Particles:
+-Cherry log particles now use the side texture
+
+Language:
+-*Added new splashes from 1.20:
+  -Made with lave!
+  -This sand is sus
+  -Remember to brush your... ...teeth
+  -Has working bookshelves!
+  -Sniff sniff...
+  -Place hanging sign here
+  -Joule is neat too!
+-*Updated Italian translations for 1.20 (Thanks, @EmptyCoso!)
+-*Crawling, experimental camera, and recipe unlocking toggles now match the Java Edition format
+-Illager banner shield descriptions are now light gray
+-*Spawn [Breeze/Armadillo] is now "[Breeze/Armadillo] Spawn Egg"
+
+==Default==
+
+Textures:
+-*Removed almost all potion and tipped arrow textures
+  -Only Tipped Arrows of Healing, Fire Resistance, Slow Falling, and Decay are still different on Bedrock and Java Edition
+
+==Programmer Art==
+
+Textures:
+-*Updated Slow Falling and Wither potions and tipped arrows to match Java Edition
+
+==Fixes==
+
+Textures:
+-Grass side color now transitions smoothly near cherry groves (Thanks, @ZouChenyunfei!)
+-Enchantment glint intensity once again matches Java Edition
+-Overworld fog now uses the correct color
+
+Entities:
+-Banner patterns on shields are now visible
+-End crystals are now the correct height
+-Villager item poses are once again correct with wool and carpet
+-Armor stand baseplate is no longer visible in the smithing table
+
+Interface:
+-Removed shield item icon due to the addition of shield banner patterns
+-Armor trims are now visible in inventories
+-Decorated pots now show sherds in inventories
+-HUD item text no longer fades in each time a new item is selected
+-HUD item text now appears for the correct duration
+-*Disabled toast screen changes due to upcoming recipe unlocking
+
+Sounds:
+-*Music delay time is now consistent across all biomes
+-*Ghast shooting can no longer be heard 100 blocks away
+-*Dead coral plants no longer make squelchy sounds
+
+Particles:
+-Updated splash potion of healing and harming particles to work with the new potion colors (Thanks, @ZouChenyunfei!)
+
+Language:
+-*Dismount messages now display the Sneak button instead of Jump
+-Dismount messages now match Java Edition when using touch controls
+
+Compatibility:
+-Using old texture packs no longer causes pink-and-black squares on logs
+
+Technical:
+-Updated render controllers for persona, cape, sniffer, and camel
+-Updated "java_armless_armor_stands.zip", "java_enchantment_glint.zip", and "java_no_vignette.zip" to reflect the latest changes
+-Flattened villager block item pose code
+-Flattened log entries in "blocks.json"
+
+==Pack==
+
+Technical:
+-Updated the minimum game version required to use the pack to 1.20.10, which means this pack is no longer compatible with earlier versions
+-Changed pack UUID to be compatible with earlier versions of this pack
+-Updated pack version to 5.2.1
+
+Pack Documents:
+-Updated the Credits policy to prevent future contributors from requesting removal of their contributions
+  -This policy change applies to Console Aspects as well.
+-Updated all names, Twitter handles, and Discord usernames of contributors
+-Updated the custom tab with the latest Changelog and Credits
+-Updated the Credits, Command List, Feature List, and Full Lists of Performance & Compatibility Changes to be correct with this version
+
+==Notes==
+
+-The shield equip sound from 1.19.4 cannot be added by a resource pack on Bedrock Edition.
+-Beds currently cannot receive 3D models in hand due to their existence under one block ID, "bed". Once the block is separated into unique IDs for each color, this may be possible.
+-Although cherry leaf particles should be billboarded, the change is not in this update due to upcoming particle changes in 1.20.20.
