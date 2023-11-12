@@ -207,7 +207,7 @@ void readNextLine(std::ifstream& fin, std::string& current_line, std::string& ne
     }
 
     //Add contributor formatting
-    size_t str_position = current_line.find("(Thanks,");
+    size_t str_position = current_line.find("(Thanks");
     if (str_position != std::string::npos) { //Only continue if the line has a contributor credit
         current_line.insert(str_position + 1, "§6"); //Gold
         str_position = current_line.find("!)");
