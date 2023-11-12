@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
     //Print final line and JSON
     if (fin.eof()) {
         printLangFile(lang,pack_namespace,section_title,current_line,extra_formatting,line_count);
-        addLineToJSON(j, current_control, padding, small_padding, pack_namespace, extra_padding,std::to_string(line_count));
+        addLineToJSON(j, current_control, padding, small_padding, pack_namespace, section_title, extra_padding,std::to_string(line_count));
 
         formatter << j.dump(2) << std::endl;
     }
