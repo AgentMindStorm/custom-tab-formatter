@@ -16,6 +16,8 @@ std::string namespaceLine(std::string line);
 void readNextLine(std::ifstream& fin, std::string& current_line, std::string& next_line, bool& extra_padding, int& line_count, bool& section_complete);
 void printLangFile(std::ofstream& lang, const std::string& pack_namespace, const std::string& current_line, int line_count);
 void addLineToJSON(json& j, json_node_t& current_control, const json& padding, const json& small_padding, const std::string& pack_namespace, bool extra_padding, const std::string& line_count);
+void addContributorColors(std::string& current_line, int line_count, size_t name_position = 0);
+void addSocialMediaColors(std::string& current_line, size_t colon_position);
 
 //Allow push_back to work with the JSON node struct
 void to_json(json& j, const json_node_t& node) {
@@ -127,7 +129,6 @@ int main(int argc, char* argv[]) {
     formatter.close();
 
     std::cout << "Finished!" << std::endl;
-    std::cout << "Manual corrections required: Multi-contributor lines (PC GUI Pack contributors)." << std::endl;
 
     return 0;
 }
@@ -167,57 +168,19 @@ void readNextLine(std::ifstream& fin, std::string& current_line, std::string& ne
     //Add verbose contributor formatting
     size_t str_position = current_line.find("made by");
     if (str_position != std::string::npos) { //Only continue if the line has a verbose contributor credit
-
-        current_line.insert(str_position + 8, "§6"); //Gold before name
-        str_position = current_line.find('(');
-        if (str_position != std::string::npos) {
-
-            //Contact formatting
-            if (current_line.at(str_position + 1) == '@') { //Twitter
-                current_line.insert(str_position + 1, "§r§3"); //Cyan
-            }
-            else { //Discord
-                current_line.insert(str_position + 1, "§r§5"); //Purple
-            }
-
-            //End contact formatting
-            str_position = current_line.find(')');
-            if (str_position != std::string::npos) {
-                current_line.insert(str_position, "§r§6"); //Gold
-            }
-            else {
-                std::cerr << "Error: Contributor credit found on line " << line_count << " without the proper closing parentheses. Check manually!" << std::endl;
-            }
-            current_line.insert(str_position + 7, "§r"); //Reset formatting
-        }
+        addContributorColors(current_line,line_count,str_position + 8);
     }
 
     //Add single-line contributor formatting
     str_position = current_line.find(" - ");
     if (str_position != std::string::npos) { //Only continue if the line has a single-line credit
-        current_line.insert(0, "§6"); //Gold before name
+        addContributorColors(current_line,line_count);
+    }
 
-        str_position = current_line.find('(');
-        if (str_position != std::string::npos) {
-            //Contact formatting
-            if (current_line.at(str_position + 1) == '@') { //Twitter
-                current_line.insert(str_position + 1, "§r§3"); //Cyan
-            }
-            else { //Discord
-                current_line.insert(str_position + 1, "§r§5"); //Purple
-            }
-
-            //End contact formatting
-            str_position = current_line.find(')');
-            if (str_position != std::string::npos) {
-                current_line.insert(str_position, "§r§6"); //Gold
-            }
-            else {
-                std::cerr << "Error: Contributor credit found on line " << line_count << " without the proper closing parentheses. Check manually!" << std::endl;
-            }
-        }
-        str_position = current_line.find(" - ");
-        current_line.insert(str_position, "§r"); //Reset formatting
+    //Add separate-line social media formatting
+    str_position = current_line.find(':');
+    if (str_position != std::string::npos) { //Only continue if the line may contain a unique social media credit
+        addSocialMediaColors(current_line,str_position);
     }
 }
 
@@ -246,4 +209,188 @@ void addLineToJSON(json& j, json_node_t& current_control, const json& padding, c
     current_control.text = "tab." + pack_namespace + ".credits." + line_count;
 
     j[pack_namespace + "_credits"]["controls"].push_back(current_control);
+}
+
+//Colors name and social media handle for contributors
+//If name_position is not 0, the line is a verbose line
+//name_position defaults to 0
+void addContributorColors(std::string& current_line, const int line_count, const size_t name_position) {
+
+    //Find important parts of line
+    size_t str_position = current_line.find('(');
+    size_t end_position = current_line.find(')');
+    size_t divider_position = current_line.find(" - ");
+    const std::string format_code = "§0";
+    const size_t format_size = format_code.length();
+
+    //Case 1: Non-verbose line with no social media credit
+    //These lines are guaranteed to have only 1 contributor
+    if (name_position == 0 && (str_position == std::string::npos || str_position > divider_position)) {
+
+        current_line.insert(name_position, "§6"); //Gold before all contributor names
+        current_line.insert(divider_position + format_size, "§r"); //Reset formatting before divider
+
+    }
+
+    //Case 2: Non-verbose line with a social media credit
+    //These lines are guaranteed to have only 1 contributor
+    else if (name_position == 0) {
+
+        size_t pos_offset = 0;
+
+        current_line.insert(name_position, "§6"); //Gold before all contributor names
+        pos_offset += format_size;
+
+        //Continue only if all expected formatting is in place
+        if (str_position > end_position || end_position > divider_position) {
+            std::cerr << "Error: Contributor credit on line " << line_count << " lacks proper formatting. Check manually!" << std::endl;
+        }
+        else {
+            //Get social media substring
+            const std::string social_media_handle = current_line.substr(str_position + 1 + pos_offset,end_position - str_position - 1);
+            std::string social_media_color;
+
+            //Add color based on platform
+            if (social_media_handle.find("Twitter") != std::string::npos) { //Twitter/X
+                social_media_color = "§r§3"; //Cyan
+            }
+            else if (social_media_handle.find("Discord") != std::string::npos) { //Discord
+                social_media_color = "§r§5"; //Purple
+            }
+            else if (social_media_handle.find("Bluesky") != std::string::npos) { //Bluesky
+                social_media_color = "§r§9"; //Blue (duh)
+            }
+            else if (social_media_handle.find("Fediverse") != std::string::npos) { //Fediverse (Mastodon and all other federated platforms)
+                social_media_color = "§r§d"; //Light Purple
+            }
+            else if (social_media_handle.find("YouTube") != std::string::npos) { //YouTube
+                social_media_color = "§r§c"; //Red
+            }
+            else { //Fallback for unknown social media
+                social_media_color = "§r§a"; //Green
+            }
+            current_line.insert(str_position + 1 + pos_offset,social_media_color);
+            pos_offset += format_size * 2;
+
+            //End contact info formatting
+            if (end_position != std::string::npos) {
+                current_line.insert(end_position + pos_offset, "§r§6"); //Gold
+                pos_offset += format_size * 2;
+            }
+            current_line.insert(divider_position + pos_offset, "§r"); //Reset formatting
+        }
+    }
+
+    //Case 3: Verbose line with unknown number of contributors
+    //It is expected that all verbose lines only use parentheses around social media handles
+    //All verbose contributors have capitalized names so far
+    else {
+
+        //Iterate through string starting at first name
+        std::vector<size_t> start_pos, social_media_pos, end_pos;
+
+        //Initialize first contributor detected
+        start_pos.push_back(name_position);
+        bool awaiting_new_contributor = false, awaiting_social_media = true, awaiting_social_media_end = false;
+
+        for (size_t pos = name_position + 1; pos < current_line.length(); pos++) {
+
+            //First capitalized letter is counted as "start" of each contributor
+            if (isupper(current_line.at(pos)) && awaiting_new_contributor && !awaiting_social_media_end) {
+                start_pos.push_back(pos);
+                awaiting_new_contributor = false;
+                awaiting_social_media = true;
+            }
+            //Social media credits start with parentheses
+            else if (current_line.at(pos) == '(' && !awaiting_social_media_end) {
+                social_media_pos.push_back(pos + 1);
+                awaiting_social_media = false;
+                awaiting_social_media_end = true;
+            }
+            //Detect end of social media credits
+            else if (current_line.at(pos) == ')' && awaiting_social_media_end) {
+                end_pos.push_back(pos);
+                awaiting_new_contributor = true;
+                awaiting_social_media_end = false;
+            }
+            //Catch contributors without social media credits
+            else if ((current_line.at(pos) == '.' || current_line.at(pos) == ':' || current_line.at(pos) == ',') && awaiting_social_media) {
+                social_media_pos.push_back(std::string::npos);
+                end_pos.push_back(pos);
+                awaiting_new_contributor = true;
+                awaiting_social_media = false;
+            }
+        }
+        if (start_pos.size() != end_pos.size() || start_pos.size() != social_media_pos.size()) {
+            std::cerr << "Error: Unknown formatting situation on line " << line_count << ". Check manually!" << std::endl;
+        }
+        else {
+            size_t pos_offset = 0;
+            std::string social_media_handle, social_media_color;
+
+            for (size_t i = 0; i < start_pos.size(); i++) {
+                current_line.insert(start_pos.at(i) + pos_offset, "§6"); //Gold before all contributor names
+                pos_offset += format_size;
+                if (social_media_pos.at(i) == std::string::npos) {
+                    current_line.insert(end_pos.at(i) + pos_offset, "§r"); //Reset formatting
+                    pos_offset += format_size;
+                }
+                else {
+                    social_media_handle = current_line.substr(social_media_pos.at(i) + 1 + pos_offset,end_pos.at(i) - social_media_pos.at(i) - 1);
+                    //Add color based on platform
+                    if (social_media_handle.find("Twitter") != std::string::npos) { //Twitter/X
+                        social_media_color = "§r§3"; //Cyan
+                    }
+                    else if (social_media_handle.find("Discord") != std::string::npos) { //Discord
+                        social_media_color = "§r§5"; //Purple
+                    }
+                    else if (social_media_handle.find("Bluesky") != std::string::npos) { //Bluesky
+                        social_media_color = "§r§9"; //Blue (duh)
+                    }
+                    else if (social_media_handle.find("Fediverse") != std::string::npos) { //Fediverse (Mastodon and all other federated platforms)
+                        social_media_color = "§r§d"; //Light Purple
+                    }
+                    else if (social_media_handle.find("YouTube") != std::string::npos) { //YouTube
+                        social_media_color = "§r§c"; //Red
+                    }
+                    else { //Fallback for unknown social media
+                        social_media_color = "§r§a"; //Green
+                    }
+                    current_line.insert(social_media_pos.at(i) + pos_offset,social_media_color);
+                    pos_offset += format_size * 2;
+                    current_line.insert(end_pos.at(i) + pos_offset,"§r§6");
+                    pos_offset += format_size * 2;
+                    current_line.insert(end_pos.at(i) + 1 + pos_offset,"§r");
+                    pos_offset += format_size;
+                }
+            }
+        }
+    }
+}
+
+//Colors separated-line social media handles
+//These lines always start with the name of the social media, then a colon, then the handle after a space
+void addSocialMediaColors(std::string& current_line, size_t colon_position) {
+
+    std::string social_media_color = "§f"; //Default value not used by any social media
+    if (current_line.find("Twitter") == 0) {
+        social_media_color = "§3"; //Cyan
+    }
+    else if (current_line.find("Discord") == 0) {
+        social_media_color = "§5"; //Purple
+    }
+    else if (current_line.find("Bluesky") == 0) {
+        social_media_color = "§9"; //Blue (duh)
+    }
+    else if (current_line.find("Fediverse") == 0) {
+        social_media_color = "§d"; //Light Purple
+    }
+    else if (current_line.find("YouTube") == 0) {
+        social_media_color = "§c"; //Red
+    }
+    //Only insert color if a matching social media was found
+    if (social_media_color != "§f") {
+        current_line.insert(colon_position + 2, social_media_color);
+    }
+    //Otherwise, no error. Not all colon lines are for social media!
 }
