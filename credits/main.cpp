@@ -140,10 +140,15 @@ int main(int argc, char* argv[]) {
 
     //Close files
     fin.close();
-    lang.close();
-    formatter.close();
+    std::cout << "Closed " << argv[1] << "..." << std::endl;
 
-    std::cout << "Finished!" << std::endl;
+    lang.close();
+    std::cout << "Finished en_US_credits.lang..." << std::endl;
+
+    formatter.close();
+    std::cout << "Finished pack_credits_section.json..." << std::endl;
+
+    std::cout << "Process completed successfully!" << std::endl;
 
     return 0;
 }
@@ -328,7 +333,7 @@ void addContributorColors(const formatting& social_media_formatting, std::string
         }
         else {
             size_t pos_offset = 0;
-            std::string social_media_handle, social_media_color;
+            std::string social_media_handle, social_media_color = social_media_formatting.fallback_color;
 
             for (size_t i = 0; i < start_pos.size(); i++) {
                 current_line.insert(start_pos.at(i) + pos_offset, "§6"); //Gold before all contributor names
@@ -362,7 +367,7 @@ void addContributorColors(const formatting& social_media_formatting, std::string
 void addSocialMediaColors(const formatting& social_media_formatting, std::string& current_line, size_t colon_position) {
 
     bool social_media_found = false;
-    std::string social_media_color;
+    std::string social_media_color = social_media_formatting.fallback_color;
     for (size_t i = 0; i < social_media_formatting.platforms.size(); i++) {
         if (current_line.find(social_media_formatting.platforms[i]) == 0) {
             social_media_color = social_media_formatting.colors[i];
@@ -416,7 +421,7 @@ int readConfigFile(const std::string& input_filename, std::vector<std::string> &
         cycle++;
     }
     fin.close();
-    std::cout << "Closed " << input_filename << "..." << std::endl << std::endl;
+    std::cout << "Closed " << input_filename << "..." << std::endl;
 
     //Error checker
     if (social_media_vector.size() != formatting_vector.size()) {

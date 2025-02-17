@@ -191,10 +191,15 @@ int main(int argc, char* argv[]) {
 
     //Close files
     fin.close();
-    lang.close();
-    formatter.close();
+    std::cout << "Closed " << argv[1] << "..." << std::endl;
 
-    std::cout << "Finished!" << std::endl;
+    lang.close();
+    std::cout << "Finished en_US_changelog.lang..." << std::endl;
+
+    formatter.close();
+    std::cout << "Finished pack_changelog_section.json..." << std::endl;
+
+    std::cout << "Process completed successfully!" << std::endl;
 
     return 0;
 }
