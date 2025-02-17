@@ -6,9 +6,9 @@ This program MUST be run from the command line with 2 arguments!
 
 # Usage
 
-    ./ChangelogFormatter <changelog_input.txt> <pack_namespace>
+    ./changelog_formatter.exe <changelog_input.txt> <pack_namespace>
 
-    ./CreditsFormatter <credits_input.txt> <pack_namespace>
+    ./credits_formatter.exe <credits_input.txt> <pack_namespace>
 
 The `changelog_input.txt file` should be one full update, from the title to the end of the Notes section. Exclude `==============` dividers. This file must be in the same folder as the executable.
 
