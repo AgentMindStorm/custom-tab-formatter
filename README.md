@@ -10,11 +10,11 @@ This program MUST be run from the command line with 2 arguments!
 
     ./CreditsFormatter <credits_input.txt> <pack_namespace>
 
-The changelog_input.txt file should be one full update, from the title to the end of the Notes section. Exclude `==============` dividers. This file must be in the same folder as the executable.
+The `changelog_input.txt file` should be one full update, from the title to the end of the Notes section. Exclude `==============` dividers. This file must be in the same folder as the executable.
 
-The credits_input.txt file should be everything from the first to last contributor credit. Exclude the `==============` dividers and anything beyond. This file must be in the same folder as the executable.
+The `credits_input.txt file` should be everything from the first to last contributor credit. Exclude the `==============` dividers and anything beyond. This file must be in the same folder as the executable.
 
-The pack_namespace is arbitrary, but should match the pack the changelog is for. For example, Java Aspects uses pack_namespace `java_aspects`.
+The `pack_namespace` is arbitrary, but should match the pack the changelog is for. For example, Java Aspects uses pack_namespace `java_aspects`.
 
 Output files are `en_US_[changelog/credits].lang` and `pack_[changelog/credits]_section.json`. These names do not match the default resources. You must copy their contents into the original resource pack files.
 
