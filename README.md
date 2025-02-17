@@ -1,5 +1,5 @@
-
 # Purpose
+
 Generates changelogs and credits for AgentMindStorm-style resource packs. Creates en_US and settings JSON UI files whose contents can be pasted directly into existing files.
 
 This program MUST be run from the command line with 2 arguments!
