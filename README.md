@@ -14,6 +14,8 @@ The `changelog_input.txt file` should be one full update, from the title to the 
 
 The `credits_input.txt file` should be everything from the first to last contributor credit. Exclude the `==============` dividers and anything beyond. This file must be in the same folder as the executable.
 
+Use the `social_media_colors.txt` file to configure a unique color for each social media platform. Arbitrary platform names are supported, so the program does not need to be recompiled to add new social media. The social media name to match is in the left column, while the formatting color to use is in the right column, separated by one space. Formatting colors **must** be one character.
+
 The `pack_namespace` is arbitrary, but should match the pack the changelog is for. For example, Java Aspects uses pack_namespace `java_aspects`.
 
 Output files are `en_US_[changelog/credits].lang` and `pack_[changelog/credits]_section.json`. These names do not match the default resources. You must copy their contents into the original resource pack files.
