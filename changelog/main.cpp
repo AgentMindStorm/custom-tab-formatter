@@ -79,6 +79,7 @@ int main(int argc, char* argv[]) {
     bool section_complete = false, extra_padding = false;
     int line_count = 0;
     std::string section_title;
+    std::vector<std::string> all_section_titles;
 
     //Print title
     readNextLine(fin,current_line,next_line,extra_formatting,extra_padding,line_count,section_complete);
@@ -101,7 +102,7 @@ int main(int argc, char* argv[]) {
     readNextLine(fin,current_line,next_line,extra_formatting,extra_padding,line_count,section_complete);
 
     //Read/write loop
-    while (!(current_line == "============================") && !fin.eof() && line_count < 500) {
+    while (current_line != "============================" && !fin.eof() && line_count < 500) {
 
         //Separate each section into its own loop
         while (!section_complete && !fin.eof()) {
@@ -117,7 +118,6 @@ int main(int argc, char* argv[]) {
             if (line_count > 500) { //Safety measure - prevent massive files
                 section_complete = true;
             }
-
         }
 
         //Iterate section
@@ -139,16 +139,54 @@ int main(int argc, char* argv[]) {
                     {"size", { "100%", "100%c" }},
                     {"controls", json::array()}
             };
-        }
 
+            //Add section title to list - assume that a duplicate section title is not used in the changelog
+            all_section_titles.push_back(section_title);
+        }
     }
 
-    //Print final line and JSON
-    if (fin.eof()) {
+    //Print final line of section and dump JSON unless program failed
+    if (line_count < 500) {
         printLangFile(lang,pack_namespace,section_title,current_line,extra_formatting,line_count);
         addLineToJSON(j, current_control, padding, small_padding, pack_namespace, section_title, extra_padding,std::to_string(line_count));
 
+        //Create master changelog section
+        j[pack_namespace + "_changelog"] = {
+                {"type", "stack_panel"},
+                {"size", { "100%", "100%c" }},
+                {"controls", json::array()}
+        };
+
+        //Header and header padding
+        current_control.name = "changelog_header@how_to_play_common.header";
+        current_control.text = "tab." + pack_namespace + ".changelog.section";
+        j[pack_namespace + "_changelog"]["controls"].push_back(current_control);
+        j[pack_namespace + "_changelog"]["controls"].push_back(padding);
+
+        //Title and title padding
+        j[pack_namespace + "_changelog"]["controls"].push_back(json::parse(R"(
+        {
+          "changelog_title_section@)" + pack_namespace + R"(_section.changelog_title_section": {}
+        }
+        )"));
+        j[pack_namespace + "_changelog"]["controls"].push_back(padding);
+
+        //All subsections
+        for (const auto& i : all_section_titles) {
+            j[pack_namespace + "_changelog"]["controls"].push_back(json::parse(R"(
+            {
+              "changelog_)" + i + R"(_section@)" + pack_namespace + R"(_section.changelog_)" + i + R"(_section": {}
+            }
+            )"));
+            if (i != all_section_titles.back()) {
+                j[pack_namespace + "_changelog"]["controls"].push_back(padding);
+            }
+        }
+
         formatter << j.dump(2) << std::endl;
+    }
+    else {
+        std::cerr << "Program Failed: Line count exceeded 500-line limit for each changelog section." << std::endl;
     }
 
     //Close files
