@@ -12,12 +12,20 @@ struct json_node_t {
     std::vector<json_node_t> child;
 };
 
+//Used to pass social media formatting more easily into functions
+struct formatting {
+    std::vector<std::string> platforms;
+    std::vector<std::string> colors;
+    std::string fallback_color = "a";
+};
+
 std::string namespaceLine(std::string line);
-void readNextLine(std::ifstream& fin, std::string& current_line, std::string& next_line, bool& extra_padding, int& line_count, bool& section_complete);
+int readConfigFile(const std::string& input_filename, std::vector<std::string> &social_media_vector, std::vector<std::string> &formatting_vector, std::string& fallback_formatting);
+void readNextLine(std::ifstream& fin, const formatting& social_media_formatting, std::string& current_line, std::string& next_line, bool& extra_padding, int& line_count, bool& section_complete);
 void printLangFile(std::ofstream& lang, const std::string& pack_namespace, const std::string& current_line, int line_count);
 void addLineToJSON(json& j, json_node_t& current_control, const json& padding, const json& small_padding, const std::string& pack_namespace, bool extra_padding, const std::string& line_count);
-void addContributorColors(std::string& current_line, int line_count, size_t name_position = 0);
-void addSocialMediaColors(std::string& current_line, size_t colon_position);
+void addContributorColors(const formatting& social_media_formatting, std::string& current_line, int line_count, size_t name_position = 0);
+void addSocialMediaColors(const formatting& social_media_formatting, std::string& current_line, size_t colon_position);
 
 //Allow push_back to work with the JSON node struct
 void to_json(json& j, const json_node_t& node) {
@@ -33,13 +41,20 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    //Open input file
+    //Open credits input file
     std::ifstream fin(argv[1]);
     if (fin.fail()) {
         std::cerr << "Failed to open " << argv[1] << std::endl;
         return -2;
     }
     std::cout << "Opened " << argv[1] << "..." << std::endl;
+
+    //Open social media color config file
+    formatting social_media_formatting;
+    if (readConfigFile("social_media_colors.txt",social_media_formatting.platforms,social_media_formatting.colors,social_media_formatting.fallback_color) != 0) {
+        std::cerr << "Aborted. Failed to read social_media_colors.txt." << std::endl;
+        return -2;
+    }
 
     //Declare pack namespace
     std::string pack_namespace = namespaceLine(argv[2]);
@@ -93,7 +108,7 @@ int main(int argc, char* argv[]) {
     current_control.text = "tab." + pack_namespace + ".credits.section";
     j[pack_namespace + "_credits"]["controls"].push_back(current_control);
     extra_padding = true;
-    readNextLine(fin,current_line,next_line,extra_padding,line_count,section_complete);
+    readNextLine(fin,social_media_formatting,current_line,next_line,extra_padding,line_count,section_complete);
 
     //Read/write loop
     while (!(current_line == "============================") && !fin.eof() && line_count < 500) {
@@ -107,7 +122,7 @@ int main(int argc, char* argv[]) {
 
             //Read next line
             extra_padding = false;
-            readNextLine(fin,current_line,next_line,extra_padding,line_count,section_complete);
+            readNextLine(fin,social_media_formatting,current_line,next_line,extra_padding,line_count,section_complete);
 
             if (line_count > 500) { //Safety measure - prevent massive files
                 section_complete = true;
@@ -152,7 +167,7 @@ std::string namespaceLine(std::string line) {
 
 //Reads a single line and configures formatting variables
 //All vars passed by reference
-void readNextLine(std::ifstream& fin, std::string& current_line, std::string& next_line, bool& extra_padding, int& line_count, bool& section_complete) {
+void readNextLine(std::ifstream& fin, const formatting& social_media_formatting, std::string& current_line, std::string& next_line, bool& extra_padding, int& line_count, bool& section_complete) {
     do {
         if (current_line.empty()) {
             extra_padding = true; //Mark extra padding where there are lines with two newlines
@@ -168,19 +183,19 @@ void readNextLine(std::ifstream& fin, std::string& current_line, std::string& ne
     //Add verbose contributor formatting
     size_t str_position = current_line.find("made by");
     if (str_position != std::string::npos) { //Only continue if the line has a verbose contributor credit
-        addContributorColors(current_line,line_count,str_position + 8);
+        addContributorColors(social_media_formatting,current_line,line_count,str_position + 8);
     }
 
     //Add single-line contributor formatting
     str_position = current_line.find(" - ");
     if (str_position != std::string::npos) { //Only continue if the line has a single-line credit
-        addContributorColors(current_line,line_count);
+        addContributorColors(social_media_formatting,current_line,line_count);
     }
 
     //Add separate-line social media formatting
     str_position = current_line.find(':');
     if (str_position != std::string::npos) { //Only continue if the line may contain a unique social media credit
-        addSocialMediaColors(current_line,str_position);
+        addSocialMediaColors(social_media_formatting,current_line,str_position);
     }
 }
 
@@ -214,7 +229,7 @@ void addLineToJSON(json& j, json_node_t& current_control, const json& padding, c
 //Colors name and social media handle for contributors
 //If name_position is not 0, the line is a verbose line
 //name_position defaults to 0
-void addContributorColors(std::string& current_line, const int line_count, const size_t name_position) {
+void addContributorColors(const formatting& social_media_formatting, std::string& current_line, const int line_count, const size_t name_position) {
 
     //Find important parts of line
     size_t str_position = current_line.find('(');
@@ -248,28 +263,15 @@ void addContributorColors(std::string& current_line, const int line_count, const
         else {
             //Get social media substring
             const std::string social_media_handle = current_line.substr(str_position + 1 + pos_offset,end_position - str_position - 1);
-            std::string social_media_color;
+            std::string social_media_color = social_media_formatting.fallback_color;
 
             //Add color based on platform
-            if (social_media_handle.find("Twitter") != std::string::npos) { //Twitter/X
-                social_media_color = "§r§3"; //Cyan
+            for (size_t i = 0; i < social_media_formatting.platforms.size(); i++) {
+                if (social_media_handle.find(social_media_formatting.platforms[i]) != std::string::npos) {
+                    social_media_color = social_media_formatting.colors[i];
+                }
             }
-            else if (social_media_handle.find("Discord") != std::string::npos) { //Discord
-                social_media_color = "§r§5"; //Purple
-            }
-            else if (social_media_handle.find("Bluesky") != std::string::npos) { //Bluesky
-                social_media_color = "§r§9"; //Blue (duh)
-            }
-            else if (social_media_handle.find("Fediverse") != std::string::npos) { //Fediverse (Mastodon and all other federated platforms)
-                social_media_color = "§r§d"; //Light Purple
-            }
-            else if (social_media_handle.find("YouTube") != std::string::npos) { //YouTube
-                social_media_color = "§r§c"; //Red
-            }
-            else { //Fallback for unknown social media
-                social_media_color = "§r§a"; //Green
-            }
-            current_line.insert(str_position + 1 + pos_offset,social_media_color);
+            current_line.insert(str_position + 1 + pos_offset,"§r§" + social_media_color);
             pos_offset += format_size * 2;
 
             //End contact info formatting
@@ -338,25 +340,12 @@ void addContributorColors(std::string& current_line, const int line_count, const
                 else {
                     social_media_handle = current_line.substr(social_media_pos.at(i) + 1 + pos_offset,end_pos.at(i) - social_media_pos.at(i) - 1);
                     //Add color based on platform
-                    if (social_media_handle.find("Twitter") != std::string::npos) { //Twitter/X
-                        social_media_color = "§r§3"; //Cyan
+                    for (size_t i = 0; i < social_media_formatting.platforms.size(); i++) {
+                        if (social_media_handle.find(social_media_formatting.platforms[i]) != std::string::npos) {
+                            social_media_color = social_media_formatting.colors[i];
+                        }
                     }
-                    else if (social_media_handle.find("Discord") != std::string::npos) { //Discord
-                        social_media_color = "§r§5"; //Purple
-                    }
-                    else if (social_media_handle.find("Bluesky") != std::string::npos) { //Bluesky
-                        social_media_color = "§r§9"; //Blue (duh)
-                    }
-                    else if (social_media_handle.find("Fediverse") != std::string::npos) { //Fediverse (Mastodon and all other federated platforms)
-                        social_media_color = "§r§d"; //Light Purple
-                    }
-                    else if (social_media_handle.find("YouTube") != std::string::npos) { //YouTube
-                        social_media_color = "§r§c"; //Red
-                    }
-                    else { //Fallback for unknown social media
-                        social_media_color = "§r§a"; //Green
-                    }
-                    current_line.insert(social_media_pos.at(i) + pos_offset,social_media_color);
+                    current_line.insert(social_media_pos.at(i) + pos_offset,"§r§" + social_media_color);
                     pos_offset += format_size * 2;
                     current_line.insert(end_pos.at(i) + pos_offset,"§r§6");
                     pos_offset += format_size * 2;
@@ -370,27 +359,74 @@ void addContributorColors(std::string& current_line, const int line_count, const
 
 //Colors separated-line social media handles
 //These lines always start with the name of the social media, then a colon, then the handle after a space
-void addSocialMediaColors(std::string& current_line, size_t colon_position) {
+void addSocialMediaColors(const formatting& social_media_formatting, std::string& current_line, size_t colon_position) {
 
-    std::string social_media_color = "§f"; //Default value not used by any social media
-    if (current_line.find("Twitter") == 0) {
-        social_media_color = "§3"; //Cyan
-    }
-    else if (current_line.find("Discord") == 0) {
-        social_media_color = "§5"; //Purple
-    }
-    else if (current_line.find("Bluesky") == 0) {
-        social_media_color = "§9"; //Blue (duh)
-    }
-    else if (current_line.find("Fediverse") == 0) {
-        social_media_color = "§d"; //Light Purple
-    }
-    else if (current_line.find("YouTube") == 0) {
-        social_media_color = "§c"; //Red
+    bool social_media_found = false;
+    std::string social_media_color;
+    for (size_t i = 0; i < social_media_formatting.platforms.size(); i++) {
+        if (current_line.find(social_media_formatting.platforms[i]) == 0) {
+            social_media_color = social_media_formatting.colors[i];
+            social_media_found = true;
+        }
     }
     //Only insert color if a matching social media was found
-    if (social_media_color != "§f") {
-        current_line.insert(colon_position + 2, social_media_color);
+    if (social_media_found) {
+        current_line.insert(colon_position + 2, "§" + social_media_color);
     }
     //Otherwise, no error. Not all colon lines are for social media!
+}
+
+//Reads config file (in two-column format) into provided vectors
+int readConfigFile(const std::string& input_filename, std::vector<std::string> &social_media_vector, std::vector<std::string> &formatting_vector, std::string& fallback_formatting) {
+
+    //Open config file
+    std::ifstream fin(input_filename);
+    if (fin.fail()) {
+        std::cerr << "Failed to open " << input_filename << "." << std::endl;
+        return -1;
+    }
+    std::cout << "Opened " << input_filename << "..." << std::endl;
+
+    std::string input;
+    int cycle = 0; //For alternating left and right
+    bool formatting_size_limit_exceeded = false, fallback_value_specified = false;
+    while (!fin.eof()) {
+        fin >> input;
+        if (cycle % 2 == 0) {
+            //Intercept the unique "_fallback_value" for formatting
+            if (input == "_fallback_value") {
+                fallback_value_specified = true;
+            }
+            else {
+                social_media_vector.push_back(input);
+            }
+        }
+        else {
+            if (input.length() > 1) { //Flag incorrect formatting config
+                formatting_size_limit_exceeded = true;
+            }
+            if (fallback_value_specified) {
+                fallback_formatting = input;
+                fallback_value_specified = false;
+            }
+            else {
+                formatting_vector.push_back(input); //Push every other word to left
+            }
+        }
+        cycle++;
+    }
+    fin.close();
+    std::cout << "Closed " << input_filename << "..." << std::endl << std::endl;
+
+    //Error checker
+    if (social_media_vector.size() != formatting_vector.size()) {
+        std::cerr << "Input file " << input_filename << " does not have an equal number of social media names and colors, or file was empty." << std::endl;
+        return -2;
+    }
+    else if (formatting_size_limit_exceeded) {
+        std::cerr << "Formatting colors may not exceed 1 character in length." << std::endl;
+        return -3;
+    }
+
+    return 0;
 }
